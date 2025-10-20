@@ -18,9 +18,10 @@ Se irán generando instancias del problema haciendo variar los datos:
 - d[i,d,s] := Disposición de asistir del trabajador i al día d en el turno s
 
 En el archivo modelo.mzn se debe modificar la línea
-´´´
+```
 include "instancias/instancia_n.dzn"; % Importamos instancia
-´´´
+```
+
 Haciendo variar el n entre dfierentes valores entre 1 y 10.
 
 
