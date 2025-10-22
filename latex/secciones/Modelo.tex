@@ -4,7 +4,7 @@ Para resolver este problema de optimización, es necesario definir los conjuntos
     \item $I = \{1,2,...,N\}$: Conjunto entero de trabajadores, siendo $N$ el número total de trabajadores y con $i\in I$.
     \item $D = \{1,2,...,H\}$: Conjunto entero de días, siendo $H$ el número total de días y con $d\in D$.
     \item $S = \{1,2,3\}$: Conjunto entero de turnos a trabajar, siendo 1 el turno de la mañana, 2 el de la tarde y 3 el de la noche, y con $s\in S$.
-    \item $T = \{1,2,...,H/7\}$: Conjunto entero de semanas, con $t\in T$.
+    \item $T = \{1,2,...,\lceil H/7 \rceil\}$: Conjunto entero de semanas, con $t\in T$.
 \end{itemize}
 \subsection{Variables}
 Una vez definidos los conjuntos necesarios, procede la definición de las variables que operarán sobre ellos, las cuales son fundamentales para la modelación y resolución del problema. Estas variables son las siguientes:
@@ -41,6 +41,6 @@ Finalmente, nuestro modelo matemático requiere de un conjunto de restricciones 
     $\displaystyle\sum_{i\in I}X_{i,d,s}= R_{d,s}:\forall s\in S, \forall d\in D$
     \item No se puede trabajar 3 fin de semanas seguidos por trabajador:\\
     $X_{i,6\cdot t,s}+X_{i,7\cdot t,s}\ge Y_{i,t}: \forall i \in I, \forall s \in S, \forall t \in T$\\\\
-    $Y_{i,t}+Y_{i,t+1}+Y_{i,t+2}\leq 2:\forall i\in I, \forall t\in \{1,2,...,(H/7)-1\}$
+    $Y_{i,t}+Y_{i,t+1}+Y_{i,t+2}\leq 2:\forall i\in I, \forall t\in \{1,2,...,\lceil H/7 \rceil-2\}$
 \end{enumerate}
 
