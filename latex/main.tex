@@ -1,98 +1,99 @@
-\documentclass[a4paper,12pt]{article}
-\usepackage[utf8]{inputenc}
-\usepackage{amsmath, amssymb}
-\usepackage{geometry}
-\geometry{margin=2.5cm}
+\documentclass[12pt, spanish]{article}
+\usepackage[margin=0.65in, foot=20pt, head = 10pt, bottom = 1.3in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[nameinlink]{cleveref}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{csquotes}
+\usepackage{pgfgantt}
+\usepackage{titlesec}
+\usepackage[spanish]{babel}
+\usepackage[backend=biber,style=apa]{biblatex}
+\addbibresource{references.bib}
+\usepackage{url}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
 
-\title{Modelo de Asignación de Turnos en Clínica}
-\author{}
-\date{}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mypython}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegray},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4,
+    language=Python
+}
+
+\lstset{style=mypython}
+\definecolor{azul}{rgb}{0,0.4,1}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=azul,
+  citecolor=blue,
+  urlcolor=blue,
+}
+
+\pagestyle{fancy}
+\fancyhf{}%
+\fancyfoot[R]{INF-292}
+\fancyfoot[L]{2025-2} 
+\fancyfoot[C]{\thepage}
+\fancyhead[L]{\includegraphics[width=0.3\linewidth]{imagenes/usm-di.png}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\setlength{\headheight}{0.15\linewidth} 
+
+\title{
+    \Large
+    \textbf{Entrega 1 \\ Optimizacion} \\[1ex]
+    \emph{\textquote{Proyecto Semestral}}
+}
+\author{
+    \texttt{Bruno Morici: 202373555-8} \and
+    \texttt{Martín Ignacio Aranda Hernández: 202373021-1} \and
+    \texttt{Cristóbal Alonso Martínez Pereira: 202373555-8} \and
+    \texttt{Juan Pablo Fuenzalida Fredes: 202373102-1}
+}
+\date{Segundo Semestre 2025}
 
 \begin{document}
-	\maketitle
-	
-	\section*{Formulación Matemática del Modelo de Asignación de Turnos}
-	
-	\subsection*{Conjuntos e Índices}
-	\begin{itemize}
-		\item $i \in I = \{1, \dots, N\}$ : conjunto de trabajadores.
-		\item $d \in D = \{1, \dots, H\}$ : conjunto de días en el horizonte de planificación.
-		\item $s \in S = \{1, 2, 3\}$ : conjunto de turnos diarios, donde:
-		\[
-		1 = \text{mañana}, \quad 2 = \text{tarde}, \quad 3 = \text{noche}.
-		\]
-		\item $w \in W = \{1, \dots, \lfloor H/7 \rfloor\}$ : conjunto de semanas (para control de fines de semana).
-	\end{itemize}
-	
-	\subsection*{Parámetros}
-	\begin{itemize}
-		\item $a_{i,d,s} \in [0,10]$ : nivel de disposición o compatibilidad del trabajador $i$ para trabajar el turno $s$ del día $d$ (0 = no disponible, 10 = totalmente dispuesto).
-		\item $r_{d,s} \in \mathbb{Z}_{+}$ : demanda de trabajadores requerida en el turno $s$ del día $d$.
-		\item $N$ : número total de trabajadores.
-		\item $H$ : número total de días en el horizonte de planificación.
-	\end{itemize}
-	
-	\subsection*{Variables de Decisión}
-	\begin{itemize}
-		\item $x_{i,d,s} =
-		\begin{cases}
-			1, & \text{si el trabajador $i$ es asignado al turno $s$ del día $d$,}\\
-			0, & \text{en caso contrario.}
-		\end{cases}$
-		\item $y_{i,w} =
-		\begin{cases}
-			1, & \text{si el trabajador $i$ trabaja al menos un turno el fin de semana $w$,}\\
-			0, & \text{en caso contrario.}
-		\end{cases}$
-	\end{itemize}
-	
-	\subsection*{Función Objetivo}
-	\[
-	\max \; Z = \sum_{i \in I} \sum_{d \in D} \sum_{s \in S} a_{i,d,s} \, x_{i,d,s}
-	\]
-	\noindent
-	El objetivo es maximizar la suma total de las disposiciones de los trabajadores asignados, buscando la mayor satisfacción global posible sin comprometer la cobertura ni las condiciones operacionales.
-	
-	\subsection*{Restricciones}
-	
-	\paragraph{1. Límite de turnos diarios por trabajador}
-	\[
-	\sum_{s \in S} x_{i,d,s} \le 2 \quad \forall i \in I, \; \forall d \in D
-	\]
-	Ningún trabajador puede desempeñar más de dos turnos en un mismo día.
-	
-	\paragraph{2. Prohibición de turnos noche–mañana consecutivos}
-	\[
-	x_{i,d,3} + x_{i,d+1,1} \le 1 \quad \forall i \in I, \; \forall d \in D \setminus \{H\}
-	\]
-	Evita que un trabajador realice el turno de noche y al día siguiente el de mañana.
-	
-	\paragraph{3. Cobertura exacta de la demanda}
-	\[
-	\sum_{i \in I} x_{i,d,s} = r_{d,s} \quad \forall d \in D, \; \forall s \in S
-	\]
-	Cada turno debe estar cubierto exactamente por la cantidad de trabajadores requerida.
-	
-	\paragraph{4. Identificación de trabajo en fin de semana}
-	\[
-	y_{i,w} = 
-	\begin{cases}
-		1, & \text{si } \displaystyle \sum_{s \in S} (x_{i,7(w-1)+6,s} + x_{i,7(w-1)+7,s}) \ge 1, \\
-		0, & \text{en otro caso.}
-	\end{cases}
-	\]
-	Indica si un trabajador realiza al menos un turno durante sábado o domingo.
-	
-	\paragraph{5. Prohibición de tres fines de semana consecutivos trabajados}
-	\[
-	y_{i,w} + y_{i,w+1} + y_{i,w+2} \le 2 
-	\quad \forall i \in I, \; \forall w \in W \setminus \{\lfloor H/7 \rfloor -2, \lfloor H/7 \rfloor -1, \lfloor H/7 \rfloor\}
-	\]
-	Evita que un trabajador trabaje tres fines de semana consecutivos.
-	
-	\subsection*{Naturaleza de las Variables}
-	\[
-	x_{i,d,s} \in \{0,1\}, \qquad y_{i,w} \in \{0,1\}
-	\]
-	
+
+\maketitle
+\thispagestyle{fancy}
+
+\setcounter{tocdepth}{1}
+\tableofcontents
+
+\newpage
+\section{Modelo Matemático}
+\input{secciones/Modelo}
+
+\newpage
+\section{Generador de Instancias}
+\input{secciones/GeneradorInstancias}
+
+\newpage
+\section{Análisis de Factibilidad}
+\input{secciones/Analisis}
+
 \end{document}
