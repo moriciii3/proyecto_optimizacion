@@ -1,5 +1,5 @@
 % --- Importamos instancias
-include "instancias/instancia_1.dzn";
+include "instancias/instancia_3.dzn";
 
 set of int: S = 1..T; % Conjunto de turnos
 

@@ -1,4 +1,5 @@
 import random
+import numpy as np
 
 """
 Genera un archivo .dzn para MiniZinc con:
@@ -13,9 +14,11 @@ def generar_instancia(nombre_archivo, N, H, T, min_demand, max_demand):
               for d in range(H)] 
              for i in range(N)]
 
-    # Generar arreglo de demanda aleatoria
-    r = [[random.randint(min_demand, max_demand) for s in range(T)] 
-         for d in range(H)]
+    # Generar arreglo de demanda con distribución normal
+    mean_demand = (min_demand + max_demand) / 2
+    std_demand = (max_demand - min_demand) / 4 # Desviación estándar para cubrir la mayoría de los casos
+    r = np.random.normal(loc=mean_demand, scale=std_demand, size=(H, T))
+    r = np.clip(r, min_demand, max_demand).astype(int)  # limitar entre min y max
 
     with open(nombre_archivo, "w") as f:
         # N y H

@@ -2,6 +2,6 @@ int: N = 3;
 int: H = 1;
 int: T = 3;
 
-array[1..N, 1..H, 1..T] of int: avail = array3d(1..N, 1..H, 1..T, [0, 7, 1, 0, 8, 5, 7, 0, 4]);
+array[1..N, 1..H, 1..T] of int: avail = array3d(1..N, 1..H, 1..T, [0, 4, 5, 3, 5, 4, 2, 3, 3]);
 
 array[1..H, 1..T] of int: r = array2d(1..H, 1..T, [1, 1, 1]);
