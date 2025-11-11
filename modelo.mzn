@@ -8,6 +8,9 @@ array[1..H, 1..T] of int: r;             % requerimiento de personal
 
 set of int: S = 1..T; % Conjunto de turnos
 
+% Descomentar este codigo para probar las instancias manualmente en el MiniZinc
+include "instancias/instancia_3.dzn";
+
 % --- Variables de decisión ---
 % 1) x[i,d,s] = 1 si el trabajador i está asignado al día d turno s
 array[1..N, 1..H, S] of var 0..1: x;
