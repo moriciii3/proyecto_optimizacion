@@ -49,6 +49,13 @@ def generar_instancia(nombre_archivo, N, H, T, min_demand, max_demand):
 
 # --- Generamos diversas instancias de la mas simple a la mas compleja ---
 ### Agregar mas instancias si se desea
+"""
+- N := Numero de trabajadores
+- H := Cantidad de dias
+- T := Cantidad de turnos
+- max_demand := Demanda maxima por dia
+- min_demand := Demanda minima por dia
+"""
 instancias = {
     # Pequeñas
     "instancia_1.dzn": {
