@@ -35,8 +35,7 @@ La respuesta que entrega el modelo viene dada por:
 - El orden de evaluación para iteraciones es, primero trabajador, luego dia, luego turno
 - Por lo que esta solucion [0,1,0, 0,0,1, 1,0,0] representa lo siguiente:
 
-+---------+-------------------+-------------------+-------------------+
-| Día \ T |  Trabajador 1     |  Trabajador 2     |  Trabajador 3     |
-+---------+-------------------+-------------------+-------------------+
-| Día 1   | (0, 1, 0)         | (0, 0, 1)         | (1, 0, 0)         |
-+---------+-------------------+-------------------+-------------------+
+| Día \ Trabajador | Trabajador 1 | Trabajador 2 | Trabajador 3 |
+|------------------|---------------|---------------|---------------|
+| Día 1            | (0, 1, 0)     | (0, 0, 1)     | (1, 0, 0)     |
+
