@@ -7,7 +7,7 @@ import minizinc
 MODELO_PATH = "modelo.mzn"
 INSTANCIAS_DIR = "instancias"
 OUTPUTS_DIR = "outputs"
-SOLVER = "coinbc"   # Usamos COIN-BC 2.10.12/1.17.10
+SOLVER = "coin-bc"   # Usamos COIN-BC 2.10.12/1.17.10
 
 # Crear carpeta de salida si no existe
 os.makedirs(OUTPUTS_DIR, exist_ok=True)
@@ -37,13 +37,26 @@ for archivo in instancias:
     resultado = instancia.solve()
     fin = time.time()
 
+    # --- Bloque corregido ---
+    respuesta_x = []
+    objetivo_z = None
+    status = str(resultado.status) if resultado else "No_Result"
+
+    # Solo intenta acceder a las variables si la solución tiene un resultado (no es SATISFIED o OPTIMAL)
+    if resultado is not None and resultado.status.has_solution():
+        # Accedemos a los resultados directamente como atributos (o usando .solution para mayor seguridad)
+        respuesta_x = resultado["x"] if "x" in resultado else [] # La notación de diccionario SÍ funciona en el objeto Solution, pero no en el Result
+        objetivo_z = resultado.objective
+
     # Preparar salida
     salida = {
         "instancia": archivo,
-        "respuesta": resultado.get("x", []),
-        "z": resultado.get("_objective", None),
+        "status": status,
+        "respuesta": respuesta_x,
+        "z": objetivo_z,
         "tiempo_ejecucion_ms": round((fin - inicio) * 1000, 2)
     }
+    # -------------------------
 
     # Guardar como JSON
     with open(salida_path, "w") as f:

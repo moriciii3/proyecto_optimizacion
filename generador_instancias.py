@@ -22,12 +22,12 @@ def generar_instancia(nombre_archivo, N, H, T, min_demand, max_demand):
 
     with open(nombre_archivo, "w") as f:
         # N y H
-        f.write(f"int: N = {N};\n")
-        f.write(f"int: H = {H};\n")
-        f.write(f"int: T = {T};\n\n")
+        f.write(f"N = {N};\n")
+        f.write(f"H = {H};\n")
+        f.write(f"T = {T};\n\n")
 
         # Escribimos las dispocisiones en el archivo
-        f.write(f"array[1..N, 1..H, 1..T] of int: avail = array3d(1..N, 1..H, 1..T, [")
+        f.write(f"avail = array3d(1..N, 1..H, 1..T, [")
         valores_avail = []
         for i in range(N):
             for d in range(H):
@@ -37,7 +37,7 @@ def generar_instancia(nombre_archivo, N, H, T, min_demand, max_demand):
         f.write("]);\n\n")
 
         # Escribimos las demandas en el archivo
-        f.write(f"array[1..H, 1..T] of int: r = array2d(1..H, 1..T, [")
+        f.write(f"r = array2d(1..H, 1..T, [")
         valores_r = []
         for d in range(H):
             for s in range(T):

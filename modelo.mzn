@@ -1,5 +1,10 @@
-% --- Importamos instancias
-include "instancias/instancia_1.dzn";
+% === Datos que vienen del .dzn ===
+int: N;              % trabajadores
+int: H;              % días
+int: T;              % turnos por día
+
+array[1..N, 1..H, 1..T] of int: avail;   % disponibilidad
+array[1..H, 1..T] of int: r;             % requerimiento de personal
 
 set of int: S = 1..T; % Conjunto de turnos
 
