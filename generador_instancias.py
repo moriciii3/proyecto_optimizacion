@@ -81,6 +81,14 @@ instancias = {
         "min_demand": 1,
         "max_demand": 3
     },
+    # Prueba def
+    "instancia_4.dzn": {
+        "N": 5,
+        "H": 2,
+        "T": 3,
+        "min_demand": 1,
+        "max_demand": 3
+    },
 }
 
 # --- Generar las instancias ---
