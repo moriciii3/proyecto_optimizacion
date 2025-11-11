@@ -17,18 +17,28 @@ Se irán generando instancias del problema haciendo variar los datos:
 - r[d,s] := Demanda de trabajadores mínimos para el día d en el turno s
 - d[i,d,s] := Disposición de asistir del trabajador i al día d en el turno s
 
-En el archivo modelo.mzn se debe modificar la línea
-```
-include "instancias/instancia_n.dzn"; % Importamos instancia
-```
-
-Haciendo variar el n entre dfierentes valores entre 1 y 10.
-
 ### Configuración
 
 A continuación se detalla la información del Software y configuración utilizadas para la resolución:
 - Solver utilizado: MiniZinc
 - Solver configuration: COIN-BC 2.10.12/1.17.10
+
+Importante:
+Para poder ejecutar el archivo "ejecutar_modelo.py" es necesario que esté descargado minizinc en el PATH, para ello se debe ejecutar en la wsl el siguiente comando:
+
+pip3 install minizinc --break-system-packages
+
+y para comprobar si está descargado se debe ejecutar el siguiente comando:
+
+minizinc --version
+
+Adicional a esto, al utilizar el solver COIN-BC, lo debemos instalar, por lo que ejecutamos el siguiente comando:
+
+sudo apt install coinor-cbc -y
+
+y comprobamos que esté descargado con el siguiente comando:
+
+cbc --version
 
 ### Acerca de la respuesta del modelo
 La respuesta que entrega el modelo viene dada por:
