@@ -37,6 +37,10 @@ for archivo in instancias:
     resultado = instancia.solve()
     fin = time.time()
 
+    print("---------- Resultado ----------")
+    print(resultado)
+    print("-------------------------------")
+
     # --- Bloque corregido ---
     respuesta_x = []
     objetivo_z = None
@@ -45,7 +49,7 @@ for archivo in instancias:
     # Solo intenta acceder a las variables si la solución tiene un resultado (no es SATISFIED o OPTIMAL)
     if resultado is not None and resultado.status.has_solution():
         # Accedemos a los resultados directamente como atributos (o usando .solution para mayor seguridad)
-        respuesta_x = resultado["x"] if "x" in resultado else [] # La notación de diccionario SÍ funciona en el objeto Solution, pero no en el Result
+        respuesta_x = resultado["x"]
         objetivo_z = resultado.objective
 
     # Preparar salida

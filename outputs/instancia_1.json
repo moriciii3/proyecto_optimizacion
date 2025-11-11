@@ -1,7 +1,29 @@
 {
   "instancia": "instancia_1.dzn",
-  "status": "No_Result",
-  "respuesta": [],
-  "z": null,
-  "tiempo_ejecucion_ms": 269.65
+  "status": "OPTIMAL_SOLUTION",
+  "respuesta": [
+    [
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      [
+        0,
+        0,
+        1
+      ]
+    ],
+    [
+      [
+        1,
+        1,
+        0
+      ]
+    ]
+  ],
+  "z": 26,
+  "tiempo_ejecucion_ms": 907.82
 }
