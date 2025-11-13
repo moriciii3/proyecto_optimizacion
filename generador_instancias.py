@@ -56,54 +56,25 @@ def generar_instancia(nombre_archivo, N, H, T, min_demand, max_demand):
 - max_demand := Demanda maxima por dia
 - min_demand := Demanda minima por dia
 """
-instancias = {
-    # === Pequeñas ===
-    "instancia_1.dzn": {
-        "N": 5,
-        "H": 5,
-        "T": 2,
-        "min_demand": 1,
-        "max_demand": 1
-    },
-    "instancia_2.dzn": {
-        "N": 8,
-        "H": 5,
-        "T": 2,
-        "min_demand": 1,
-        "max_demand": 1
-    },
-    "instancia_3.dzn": {
-        "N": 10,
-        "H": 6,
-        "T": 2,
-        "min_demand": 1,
-        "max_demand": 1
-    },
-    "instancia_4.dzn": {
-        "N": 12,
-        "H": 7,
-        "T": 2,
-        "min_demand": 1,
-        "max_demand": 1
-    },
-    "instancia_5.dzn": {
-        "N": 15,
-        "H": 7,
-        "T": 2,
-        "min_demand": 1,
-        "max_demand": 1
-    },
 
-    # === Medianas ===
-}
 
-# --- Generar las instancias ---
-for nombre_archivo, params in instancias.items():
-    generar_instancia(
-        "instancias/"+nombre_archivo,
-        params["N"],
-        params["H"],
-        params["T"],        
-        params["min_demand"],
-        params["max_demand"]
-    )
+
+jotapath = "instancias/instancia"
+for i in range(0, 15):
+    #instancia pequeña
+    H = int(random.uniform(5, 7))
+    N = int(random.uniform(5, 15))
+    T = 2
+    generar_instancia(jotapath+"_pequena_"+str(i+1)+".dzn",N,H,T,0,N*3/5)
+
+    #instancia mediana
+    H = int(random.uniform(7, 14))
+    N = int(random.uniform(15, 45))
+    T = 3
+    generar_instancia(jotapath+"_mediana_"+str(i+1)+".dzn",N,H,T,0,N*3/5)
+
+    #instancia grande
+    H = int(random.uniform(14, 28))
+    N = int(random.uniform(45, 90))
+    T = 3
+    generar_instancia(jotapath+"_grande_"+str(i+1)+".dzn",N,H,T,0,N*3/5)
