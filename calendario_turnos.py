@@ -4,56 +4,104 @@ import matplotlib.pyplot as plt
 def cargar_solucion_json(ruta_json):
     with open(ruta_json, "r") as f:
         data = json.load(f)
-
     x = data["respuesta"]   # x[i][h][t]
     N = len(x)              # trabajadores
     H = len(x[0])           # días
-    T = len(x[0][0])        # turnos
+    T = len(x[0][0])        # turnos (3)
     return N, H, T, x
 
-def dibujar_calendario(N, H, T, x, salida_pdf="calendario_turnos.pdf"):
-    nombres_turnos = ["Mañana", "Tarde", "Noche"][:T]
 
-    filas = H * T
+def dibujar_calendario(N, H, T, x, salida_pdf="calendario_turnos.pdf"):
+    """
+    Layout:
+      - 3 filas por día: Día / Tarde / Noche (o T turnos).
+      - Bloques de día separados por un pequeño gap vertical.
+      - t=0 se dibuja arriba, t=1 al medio, t=2 abajo (alineado con el orden del modelo).
+    """
+    nombres_turnos = ["Día", "Tarde", "Noche"][:T]
+
+    gap = 0.25               # separación entre días
+    bloque_altura = T        # altura útil de cada día (3 filas)
+    total_altura = H * bloque_altura + (H - 1) * gap
     cols = N
 
-    fig, ax = plt.subplots(figsize=(cols * 0.6 + 3, filas * 0.35 + 2))
+    fig, ax = plt.subplots(figsize=(cols * 0.7 + 3, total_altura * 0.5 + 2.5))
     ax.set_xlim(0, cols)
-    ax.set_ylim(0, filas)
+    ax.set_ylim(0, total_altura + 0.8)
     ax.axis("off")
-    plt.title("Calendario de asignación de turnos", fontsize=16, pad=20)
 
+    plt.title("Calendario de asignación de turnos", fontsize=18, pad=30)
+    plt.subplots_adjust(top=0.90)
+
+    color_on  = "#027CA4"
+    color_off = "#ffffff"
+    banda_par = "#f5f5f5"
+    sep_color = "#999999"
+
+    # Fondo alternado + líneas gruesas entre días
     for h in range(H):
+        bloque_bottom = total_altura - (h + 1) * bloque_altura - h * gap
+        bloque_top = bloque_bottom + bloque_altura
+
+        if h % 2 == 1:
+            ax.add_patch(
+                plt.Rectangle((0, bloque_bottom), cols, bloque_altura,
+                              facecolor=banda_par, edgecolor="none", zorder=0)
+            )
+
+        ax.plot([0, cols], [bloque_bottom, bloque_bottom],
+                color="black", linewidth=1.2, zorder=5)
+
+    ax.plot([0, cols], [total_altura, total_altura],
+            color="black", linewidth=1.2, zorder=5)
+
+    # Celdas y etiquetas
+    for h in range(H):
+        bloque_bottom = total_altura - (h + 1) * bloque_altura - h * gap
+        bloque_top = bloque_bottom + bloque_altura
+        centro_dia = bloque_bottom + bloque_altura / 2.0
+
+        ax.text(-0.7, centro_dia, f"Día {h+1}",
+                ha="right", va="center", fontsize=11, fontweight="bold")
+
         for t in range(T):
-            fila = filas - 1 - (h * T + t)
+            # AHORA: t=0 arriba, t=1 al medio, t=2 abajo
+            fila_bottom = bloque_top - (t + 1)
+            fila_center = fila_bottom + 0.5
+
+            ax.text(-0.15, fila_center, nombres_turnos[t],
+                    ha="right", va="center", fontsize=9)
+
+            # línea fina entre filas
+            ax.plot([0, cols], [fila_bottom, fila_bottom],
+                    color=sep_color, linewidth=0.6, zorder=4)
+
             for i in range(N):
                 valor = x[i][h][t]
-                color = "#b6d7a8" if valor == 1 else "#ffffff"
+                color = color_on if valor == 1 else color_off
+
                 ax.add_patch(
-                    plt.Rectangle((i, fila), 1, 1,
+                    plt.Rectangle((i, fila_bottom), 1, 1,
                                   edgecolor="black",
                                   facecolor=color,
-                                  linewidth=0.5)
+                                  linewidth=0.5,
+                                  zorder=3)
                 )
                 if valor == 1:
-                    ax.text(i + 0.5, fila + 0.5, "1",
-                            ha="center", va="center", fontsize=8)
+                    ax.text(i + 0.5, fila_center, "1",
+                            ha="center", va="center", fontsize=8, zorder=4)
 
-            ax.text(-0.1, fila + 0.5,
-                    f"D{h+1} - {nombres_turnos[t]}",
-                    ha="right", va="center", fontsize=8)
-
+    # Encabezados de trabajadores pegados a la tabla
     for i in range(N):
-        ax.text(i + 0.5, filas + 0.2,
-                f"Trab {i+1}",
-                ha="center", va="bottom", fontsize=8, rotation=45)
+        ax.text(i + 0.5, total_altura + 0.25, f"Trab {i+1}",
+                ha="center", va="bottom", fontsize=10)
 
     plt.tight_layout()
     plt.savefig(salida_pdf, bbox_inches="tight")
     print(f"✅ Calendario generado en: {salida_pdf}")
 
+
 if __name__ == "__main__":
-    # pon aquí el JSON que te hizo tu ejecutar_modelo.py
-    ruta_json = "outputs/instancia_2.json"
+    ruta_json = "outputs/instancia_mediana_1_1.json"
     N, H, T, x = cargar_solucion_json(ruta_json)
     dibujar_calendario(N, H, T, x)
