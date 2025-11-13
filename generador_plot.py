@@ -2,6 +2,7 @@ import os
 import json
 import re
 import matplotlib.pyplot as plt
+import numpy as np
 
 # === Carpetas ===
 carpeta_outputs = "outputs"
@@ -84,8 +85,13 @@ labels_tiempo_ord = [d['label'] for d in datos_tiempo_ord]
 # 2. Crear Eje X indexado (1, 2, 3, ...)
 x_posiciones_tiempo = list(range(1, len(labels_tiempo_ord) + 1))
 
+
 plt.figure(figsize=(10, 6))
-plt.scatter(x_posiciones_tiempo, tiempos_ord, marker="o", color="orange") 
+plt.plot(x_posiciones_tiempo, tiempos_ord, marker="o", color="orange", linestyle='-') 
+
+# # Agregamos la linea de tendencia.
+# plt.plot(x_linea_t, y_linea_t, color='red', linestyle='--', 
+#          label=f'Tendencia Lineal\n(y = {coeficientes_t[0]:.2f}x + {coeficientes_t[1]:.2f})')
 
 # Etiquetas sobre los puntos
 for x, y, label, tam in zip(x_posiciones_tiempo, tiempos_ord, labels_tiempo_ord, tamanios_tiempo_ord):
@@ -122,6 +128,10 @@ x_posiciones_z = list(range(1, len(labels_z_ord) + 1))
 
 plt.figure(figsize=(10, 6))
 plt.scatter(x_posiciones_z, valores_z_ord, marker="o", color="blue") 
+
+# # Agregamos la Línea de Tendencia
+# plt.plot(x_linea_z, y_linea_z, color='blue', linestyle='--', 
+#          label=f'Tendencia Lineal\n(y = {coeficientes_z[0]:.2f}x + {coeficientes_z[1]:.2f})')
 
 # Etiquetas sobre los puntos
 for x, y, label, tam in zip(x_posiciones_z, valores_z_ord, labels_z_ord, tamanios_z_ord):
