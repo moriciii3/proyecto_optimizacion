@@ -57,38 +57,44 @@ def generar_instancia(nombre_archivo, N, H, T, min_demand, max_demand):
 - min_demand := Demanda minima por dia
 """
 instancias = {
-    # Pequeñas
+    # === Pequeñas ===
     "instancia_1.dzn": {
-        "N": 3,
-        "H": 1,
-        "T": 3,
+        "N": 5,
+        "H": 5,
+        "T": 2,
         "min_demand": 1,
         "max_demand": 1
     },
-    # Medianas
     "instancia_2.dzn": {
-        "N": 10,
-        "H": 30,
-        "T": 3,
+        "N": 8,
+        "H": 5,
+        "T": 2,
         "min_demand": 1,
-        "max_demand": 3
+        "max_demand": 1
     },
-    # Grandes
     "instancia_3.dzn": {
-        "N": 90,
-        "H": 30,
-        "T": 3,
+        "N": 10,
+        "H": 6,
+        "T": 2,
         "min_demand": 1,
-        "max_demand": 3
+        "max_demand": 1
     },
-    # Prueba def
     "instancia_4.dzn": {
-        "N": 5,
-        "H": 2,
-        "T": 3,
+        "N": 12,
+        "H": 7,
+        "T": 2,
         "min_demand": 1,
-        "max_demand": 3
+        "max_demand": 1
     },
+    "instancia_5.dzn": {
+        "N": 15,
+        "H": 7,
+        "T": 2,
+        "min_demand": 1,
+        "max_demand": 1
+    },
+
+    # === Medianas ===
 }
 
 # --- Generar las instancias ---

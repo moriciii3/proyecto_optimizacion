@@ -40,11 +40,18 @@ constraint
         sum(s in S) ( x[i,d,s] ) <= 2
     );
 
-% 2) Se prohíbe turno noche (3) y mañana (1) del día siguiente para el mismo trabajador
+% 2) Se prohíbe turno noche (3) y mañana (1) del día siguiente para el mismo trabajador solo si T=3
 constraint
-    forall(i in 1..N, d in 1..H-1) (
-        x[i,d,3] + x[i,d+1,1] <= 1
-    );
+    if T >= 3 then
+        forall(i in 1..N, d in 1..H-1) (
+            x[i,d,3] + x[i,d+1,1] <= 1
+        )
+    else
+        % NO SE PUEDE NOCHE Y DIA SIGUIENTE
+        forall(i in 1..N, d in 1..H-1) (
+            x[i,d,2] + x[i,d+1,1] <= 1
+        )
+    endif;
 
 % 3) Cubrir la demanda exactamente: suma de trabajadores asignados = r[d,s]
 constraint

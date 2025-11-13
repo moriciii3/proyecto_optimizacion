@@ -54,6 +54,6 @@ def dibujar_calendario(N, H, T, x, salida_pdf="calendario_turnos.pdf"):
 
 if __name__ == "__main__":
     # pon aquí el JSON que te hizo tu ejecutar_modelo.py
-    ruta_json = "outputs/instancia_4.json"
+    ruta_json = "outputs/instancia_2.json"
     N, H, T, x = cargar_solucion_json(ruta_json)
     dibujar_calendario(N, H, T, x)
