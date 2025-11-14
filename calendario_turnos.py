@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import glob
 import os
 
+# ... [Las funciones cargar_solucion_json y dibujar_calendario se mantienen igual] ...
+
 def cargar_solucion_json(ruta_json):
     """Carga los parámetros N, H, T y la matriz de solución x desde un archivo JSON."""
     with open(ruta_json, "r") as f:
@@ -19,7 +21,7 @@ def dibujar_calendario(N, H, T, x, nombre_instancia, carpeta_salida):
     """Dibuja y guarda el calendario de turnos en un archivo PDF."""
     
     # Define los nombres de turnos, limitados por T (la dimensión de turnos en la solución)
-    nombres_turnos = ["Día", "Noche"][:T]
+    nombres_turnos = ["Mañana", "Tarde", "Noche"][:T]
 
     filas = H * T
     cols = N
@@ -76,34 +78,46 @@ def dibujar_calendario(N, H, T, x, nombre_instancia, carpeta_salida):
 
 if __name__ == "__main__":
     
-    CARPETA_SALIDA_PDF = "calendarios/"
+    CARPETA_SALIDA_PDF = "calendarios"
+    PREFIJO_INSTANCIA = "instancia_pequena_"
+    INDICES_A_PROCESAR = [1, 2, 3, 4, 5]
+    SUFIJO_INSTANCIA = "_1.json"
 
     # Crear la carpeta de salida si no existe
     os.makedirs(CARPETA_SALIDA_PDF, exist_ok=True)
     print(f"📁 Asegurando que la carpeta de salida '{CARPETA_SALIDA_PDF}' existe.")
 
-    # 1. Definir el patrón de búsqueda para las instancias
-    patron_busqueda = "outputs/instancia_*.json"
-    archivos_json = glob.glob(patron_busqueda)
+    # 1. Crear la lista exacta de archivos a procesar
+    archivos_json = []
+    for i in INDICES_A_PROCESAR:
+        nombre_archivo = f"{PREFIJO_INSTANCIA}{i}{SUFIJO_INSTANCIA}"
+        ruta_json = os.path.join("outputs", nombre_archivo)
+        
+        if os.path.exists(ruta_json):
+            archivos_json.append(ruta_json)
+        else:
+            print(f"⚠️ Archivo no encontrado: {ruta_json}")
+
     
     if not archivos_json:
-        print(f"⚠️ No se encontraron archivos JSON que coincidan con el patrón '{patron_busqueda}'")
+        print(f"⚠️ No se encontraron archivos de las instancias pequeñas {INDICES_A_PROCESAR} con sufijo '{SUFIJO_INSTANCIA}'.")
+        exit() # Termina el script si no hay archivos para procesar
     
-    print(f"⚙️ Procesando {len(archivos_json)} instancias...")
+    print(f"⚙️ Procesando {len(archivos_json)} instancias específicas...")
 
-    # 2. Iterar sobre cada archivo encontrado
+    # 2. Iterar sobre cada archivo encontrado en la lista filtrada
     for ruta_json in archivos_json:
         try:
-            # Extraer el nombre de la instancia (ej: "instancia_2")
-            nombre_archivo = os.path.basename(ruta_json)
-            nombre_instancia = nombre_archivo.replace(".json", "")
+            # El nombre de la instancia es la parte del nombre de archivo sin la carpeta ni la extensión
+            nombre_archivo_completo = os.path.basename(ruta_json)
+            nombre_instancia = nombre_archivo_completo.replace(".json", "")
             
             print(f"\n--- Procesando {nombre_instancia} ({ruta_json}) ---")
             
             # Cargar los datos
             N, H, T, x = cargar_solucion_json(ruta_json)
             
-            # Dibujar y guardar el calendario, pasando la nueva carpeta de salida
+            # Dibujar y guardar el calendario
             dibujar_calendario(N, H, T, x, nombre_instancia, CARPETA_SALIDA_PDF)
             
         except Exception as e:

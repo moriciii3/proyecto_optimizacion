@@ -5,15 +5,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # === Carpetas ===
-carpeta_outputs = "outputs"
-carpeta_instancias = "instancias"
+carpeta_outputs = "outputs_copy/"
+carpeta_instancias = "instancias_copy/"
 carpeta_plots = "plots"
 
 # Crear carpeta plots si no existe
 os.makedirs(carpeta_plots, exist_ok=True)
 
 # === Listas para datos ===
-datos_instancia = []
+datos_instancia_factibles = []
+datos_instancia_infactibles = []
 
 # === Procesar archivos JSON ===
 for archivo_json in sorted(os.listdir(carpeta_outputs)):
@@ -43,9 +44,11 @@ for archivo_json in sorted(os.listdir(carpeta_outputs)):
         try:
             with open(ruta_dzn, "r", encoding="utf-8") as f:
                 for linea in (f.readline() for _ in range(5)):
-                    if not linea: break
+                    if not linea:
+                        break
                     m = re.search(rf"\b{nombre}\s*=\s*(\d+)\s*;", linea)
-                    if m: return int(m.group(1))
+                    if m:
+                        return int(m.group(1))
         except FileNotFoundError:
             return None
         return None
@@ -58,94 +61,118 @@ for archivo_json in sorted(os.listdir(carpeta_outputs)):
         print(f"⚠️ No se pudieron extraer N, H, T en {ruta_dzn}")
         continue
 
-    # Almacenamos tiempo, z, tamaño y etiqueta.
     tam = N * T * H
     tiempo = data.get("tiempo_ejecucion_ms", 0)
     z = data.get("z", 0)
     label = os.path.splitext(nombre_instancia)[0]
 
-    datos_instancia.append({'tiempo': tiempo, 'z': z, 'tamano': tam, 'label': label})
+    # Determinar factibilidad desde JSON (ajusta según tu estructura)
+    status = data.get("status", "Factible")  # Por defecto asumimos factible
+
+    if status.lower() in ["no_result", "infactible"]:
+        datos_instancia_infactibles.append({'tiempo': tiempo, 'z': z, 'tamano': tam, 'label': label})
+    else:
+        datos_instancia_factibles.append({'tiempo': tiempo, 'z': z, 'tamano': tam, 'label': label})
+
 
 # === Verificar datos ===
-if not datos_instancia:
+if not datos_instancia_factibles and not datos_instancia_infactibles:
     print("❌ No se encontraron datos para graficar.")
     exit()
 
+
 # ==========================================================
-# Gráfico 1: Tiempo ordenado por Tiempo
+# Gráfico 1: Tamaño de la instancia (N * H * T) vs Tiempo [ESCALA LOGARÍTMICA]
 # ==========================================================
-
-# 1. Ordenar por tiempo de ejecución
-datos_tiempo_ord = sorted(datos_instancia, key=lambda x: x['tiempo'])
-
-tiempos_ord = [d['tiempo'] for d in datos_tiempo_ord]
-tamanios_tiempo_ord = [d['tamano'] for d in datos_tiempo_ord]
-labels_tiempo_ord = [d['label'] for d in datos_tiempo_ord]
-
-# 2. Crear Eje X indexado (1, 2, 3, ...)
-x_posiciones_tiempo = list(range(1, len(labels_tiempo_ord) + 1))
-
 
 plt.figure(figsize=(10, 6))
-plt.plot(x_posiciones_tiempo, tiempos_ord, marker="o", color="orange", linestyle='-') 
 
-# # Agregamos la linea de tendencia.
-# plt.plot(x_linea_t, y_linea_t, color='red', linestyle='--', 
-#          label=f'Tendencia Lineal\n(y = {coeficientes_t[0]:.2f}x + {coeficientes_t[1]:.2f})')
+# --- Datos factibles ---
+if datos_instancia_factibles:
+    datos_f = sorted(datos_instancia_factibles, key=lambda x: x['tamano'])
+    tamanios_f = [d['tamano'] for d in datos_f]
+    tiempos_f = [d['tiempo'] for d in datos_f]
+    plt.scatter(tamanios_f, tiempos_f, color="green", label="Factibles", alpha=0.7)
 
-# Etiquetas sobre los puntos
-for x, y, label, tam in zip(x_posiciones_tiempo, tiempos_ord, labels_tiempo_ord, tamanios_tiempo_ord):
-    # Etiquetamos cada punto con el nombre de la instancia y su tamaño
-    plt.annotate(f"{label}\n(T: {tam})", (x, y), textcoords="offset points", xytext=(5, 5), fontsize=8)
+# --- Datos infactibles ---
+if datos_instancia_infactibles:
+    datos_inf = sorted(datos_instancia_infactibles, key=lambda x: x['tamano'])
+    tamanios_inf = [d['tamano'] for d in datos_inf]
+    tiempos_inf = [d['tiempo'] for d in datos_inf]
+    plt.scatter(tamanios_inf, tiempos_inf, color="red", label="Infactibles", alpha=0.7)
 
-# Etiquetas del Eje X: Usamos los nombres de las instancias ordenados por tiempo
-plt.xticks(x_posiciones_tiempo, labels_tiempo_ord, rotation=45, ha="right", fontsize=8)
+plt.xscale("log")  # Escala logarítmica en el eje X
 
-plt.xlabel("Instancias (Ordenadas de Menor a Mayor Tiempo de Ejecución)")
+plt.xlabel("Tamaño de instancia (N × H × T) [escala logarítmica]")
 plt.ylabel("Tiempo de ejecución (ms)")
-plt.title("Dispersión: Tiempo de Ejecución (Ordenado por Tiempo)")
-plt.grid(axis='y')
+plt.title("Dispersión: Tiempo vs Tamaño de instancia (escala logarítmica)")
+plt.legend()
+plt.grid(True, which="both", axis="both", linestyle="--", linewidth=0.5)
 plt.tight_layout()
-plt.savefig(os.path.join(carpeta_plots, "dispersion_tiempo_ordenada.png"), dpi=300)
+plt.savefig(os.path.join(carpeta_plots, "dispersion_tiempo_vs_tamano_log_factibles_infactibles.png"), dpi=300)
 plt.close()
 
+print(f"✅ Gráfico 'dispersion_tiempo_vs_tamano_log_factibles_infactibles.png' guardado en la carpeta '{carpeta_plots}/'")
 
 # ==========================================================
-# Gráfico 2: Valor Z ordenado por Valor Z
+# Gráfico 2: Tamaño de la instancia (N * H * T) vs Valor de la función objetivo  [ESCALA LOGARÍTMICA]
 # ==========================================================
-
-# 1. Ordenar por valor Z
-# Asumo que el valor Z es un valor que se desea maximizar o minimizar.
-# Ordenaremos de menor a mayor valor Z.
-datos_z_ord = sorted(datos_instancia, key=lambda x: x['z'])
-
-valores_z_ord = [d['z'] for d in datos_z_ord]
-tamanios_z_ord = [d['tamano'] for d in datos_z_ord]
-labels_z_ord = [d['label'] for d in datos_z_ord]
-
-# 2. Crear Eje X indexado (1, 2, 3, ...)
-x_posiciones_z = list(range(1, len(labels_z_ord) + 1))
 
 plt.figure(figsize=(10, 6))
-plt.scatter(x_posiciones_z, valores_z_ord, marker="o", color="blue") 
 
-# # Agregamos la Línea de Tendencia
-# plt.plot(x_linea_z, y_linea_z, color='blue', linestyle='--', 
-#          label=f'Tendencia Lineal\n(y = {coeficientes_z[0]:.2f}x + {coeficientes_z[1]:.2f})')
+# --- Datos factibles ---
+if datos_instancia_factibles:
+    # Ordenar por tamaño para una mejor visualización de la tendencia
+    datos_f = sorted(datos_instancia_factibles, key=lambda x: x['tamano'])
+    tamanios_f = [d['tamano'] for d in datos_f]
+    valores_z_f = [d['z'] for d in datos_f]
+    
+    # Puntos azules para soluciones óptimas (Z > 0)
+    plt.scatter(
+        tamanios_f, 
+        valores_z_f, 
+        color="blue", 
+        label="Solución Óptima (Z > 0)", 
+        alpha=0.7, 
+        s=50, 
+        edgecolors='k'
+    )
 
-# Etiquetas sobre los puntos
-for x, y, label, tam in zip(x_posiciones_z, valores_z_ord, labels_z_ord, tamanios_z_ord):
-    plt.annotate(f"{label}\n(T: {tam})", (x, y), textcoords="offset points", xytext=(5, 5), fontsize=8)
+# --- Datos infactibles ---
+if datos_instancia_infactibles:
+    datos_inf = sorted(datos_instancia_infactibles, key=lambda x: x['tamano'])
+    tamanios_inf = [d['tamano'] for d in datos_inf]
+    # Los infactibles siempre tendrán Z=0 (o el valor que el solver retorne como nulo)
+    # y se representarán con un marcador diferente.
+    valores_z_inf = [d.get('z', 0) for d in datos_inf] 
+    
+    # Puntos rojos 'X' para infactibles (Z=0)
+    plt.scatter(
+        tamanios_inf, 
+        valores_z_inf, 
+        color="red", 
+        marker='X', 
+        label="Infactible / No Resuelto (Z=0)", 
+        alpha=0.9, 
+        s=100
+    )
 
-# Etiquetas del Eje X: Usamos los nombres de las instancias ordenados por Z
-plt.xticks(x_posiciones_z, labels_z_ord, rotation=45, ha="right", fontsize=8)
+# --- Configuración y Etiquetas ---
+plt.xscale("log") # Escala logarítmica en el eje X para manejar grandes variaciones de tamaño
 
-plt.xlabel("Instancias (Ordenadas de Menor a Mayor Valor Z)")
-plt.ylabel("Valor objetivo (z)")
-plt.title("Dispersión: Valor Objetivo Z (Ordenado por Valor Z)")
-plt.grid(axis='y')
+# Establecer límites inferiores para Z si todos son positivos para evitar log(0),
+# aunque para este gráfico lineal, log en X es suficiente.
+# plt.ylim(ymin=-50) 
+
+plt.xlabel("Tamaño de Instancia ($N \\times H \\times T$) [escala logarítmica]")
+plt.ylabel("Valor de la Función Objetivo Óptima ($Z$)")
+plt.title("Dispersión: Valor de Z vs. Tamaño de Instancia")
+plt.legend()
+plt.grid(True, which="both", axis="both", linestyle="--", linewidth=0.5)
 plt.tight_layout()
-plt.savefig(os.path.join(carpeta_plots, "dispersion_z_ordenada.png"), dpi=300)
+
+nombre_archivo_salida = os.path.join(carpeta_plots, "dispersion_z_vs_tamano_log_factibles_infactibles.png")
+plt.savefig(nombre_archivo_salida, dpi=300)
 plt.close()
 
-print(f"✅ Dos gráficos de dispersión independientes guardados en la carpeta '{carpeta_plots}/'")
+print(f"✅ Gráfico '{nombre_archivo_salida}' guardado en la carpeta '{carpeta_plots}/'")
