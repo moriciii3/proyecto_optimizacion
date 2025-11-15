@@ -9,62 +9,99 @@ def cargar_solucion_json(ruta_json):
     """Carga los parámetros N, H, T y la matriz de solución x desde un archivo JSON."""
     with open(ruta_json, "r") as f:
         data = json.load(f)
-
-    # x[i][h][t]: 1 si el trabajador 'i' trabaja el día 'h' en el turno 't'.
-    x = data["respuesta"]
-    N = len(x)              # Número de trabajadores (i)
-    H = len(x[0])           # Número de días (h)
-    T = len(x[0][0])        # Número de turnos (t)
+    x = data["respuesta"]   # x[i][h][t]
+    N = len(x)              # trabajadores
+    H = len(x[0])           # días
+    T = len(x[0][0])        # turnos (3)
     return N, H, T, x
 
-def dibujar_calendario(N, H, T, x, nombre_instancia, carpeta_salida):
-    """Dibuja y guarda el calendario de turnos en un archivo PDF."""
-    
-    # Define los nombres de turnos, limitados por T (la dimensión de turnos en la solución)
-    nombres_turnos = ["Mañana", "Tarde", "Noche"][:T]
 
-    filas = H * T
+def dibujar_calendario(N, H, T, x, salida_pdf="calendario_turnos.pdf"):
+    """
+    Layout:
+      - 3 filas por día: Día / Tarde / Noche (o T turnos).
+      - Bloques de día separados por un pequeño gap vertical.
+      - t=0 se dibuja arriba, t=1 al medio, t=2 abajo (alineado con el orden del modelo).
+    """
+    nombres_turnos = ["Día", "Tarde", "Noche"][:T]
+
+    gap = 0.25               # separación entre días
+    bloque_altura = T        # altura útil de cada día (3 filas)
+    total_altura = H * bloque_altura + (H - 1) * gap
     cols = N
-    
-    # Configuración del plot (ajusta el tamaño de la figura)
-    fig, ax = plt.subplots(figsize=(cols * 0.6 + 3, filas * 0.35 + 2))
-    ax.set_xlim(0, cols)
-    ax.set_ylim(0, filas)
-    ax.axis("off")
-    plt.title(f"Calendario de asignación de turnos\n({nombre_instancia})", fontsize=14, pad=20)
 
-    # Dibujar la matriz de asignación
+    fig, ax = plt.subplots(figsize=(cols * 0.7 + 3, total_altura * 0.5 + 2.5))
+    ax.set_xlim(0, cols)
+    ax.set_ylim(0, total_altura + 0.8)
+    ax.axis("off")
+
+    plt.title("Calendario de asignación de turnos", fontsize=18, pad=30)
+    plt.subplots_adjust(top=0.90)
+
+    color_on  = "#027CA4"
+    color_off = "#ffffff"
+    banda_par = "#f5f5f5"
+    sep_color = "#999999"
+
+    # Fondo alternado + líneas gruesas entre días
     for h in range(H):
+        bloque_bottom = total_altura - (h + 1) * bloque_altura - h * gap
+        bloque_top = bloque_bottom + bloque_altura
+
+        if h % 2 == 1:
+            ax.add_patch(
+                plt.Rectangle((0, bloque_bottom), cols, bloque_altura,
+                              facecolor=banda_par, edgecolor="none", zorder=0)
+            )
+
+        ax.plot([0, cols], [bloque_bottom, bloque_bottom],
+                color="black", linewidth=1.2, zorder=5)
+
+    ax.plot([0, cols], [total_altura, total_altura],
+            color="black", linewidth=1.2, zorder=5)
+
+    # Celdas y etiquetas
+    for h in range(H):
+        bloque_bottom = total_altura - (h + 1) * bloque_altura - h * gap
+        bloque_top = bloque_bottom + bloque_altura
+        centro_dia = bloque_bottom + bloque_altura / 2.0
+
+        ax.text(-0.7, centro_dia, f"Día {h+1}",
+                ha="right", va="center", fontsize=11, fontweight="bold")
+
         for t in range(T):
-            fila = filas - 1 - (h * T + t) # Calcular la fila actual de abajo hacia arriba
+            # AHORA: t=0 arriba, t=1 al medio, t=2 abajo
+            fila_bottom = bloque_top - (t + 1)
+            fila_center = fila_bottom + 0.5
+
+            ax.text(-0.15, fila_center, nombres_turnos[t],
+                    ha="right", va="center", fontsize=9)
+
+            # línea fina entre filas
+            ax.plot([0, cols], [fila_bottom, fila_bottom],
+                    color=sep_color, linewidth=0.6, zorder=4)
+
             for i in range(N):
                 valor = x[i][h][t]
-                
-                # Asignar color: verde si hay asignación (1), blanco si no (0)
-                color = "#b6d7a8" if valor == 1 else "#ffffff"
-                
+                color = color_on if valor == 1 else color_off
+
                 ax.add_patch(
-                    plt.Rectangle((i, fila), 1, 1,
+                    plt.Rectangle((i, fila_bottom), 1, 1,
                                   edgecolor="black",
                                   facecolor=color,
-                                  linewidth=0.5)
+                                  linewidth=0.5,
+                                  zorder=3)
                 )
                 
                 # Opcional: Escribir '1' en la casilla si hay asignación
                 if valor == 1:
-                    ax.text(i + 0.5, fila + 0.5, "1",
-                            ha="center", va="center", fontsize=8)
+                    ax.text(i + 0.5, fila_center, "1",
+                            ha="center", va="center", fontsize=8, zorder=4)
 
-            # Etiquetas de filas (Día y Turno)
-            ax.text(-0.1, fila + 0.5,
-                    f"D{h+1} - {nombres_turnos[t]}",
-                    ha="right", va="center", fontsize=8)
-
-    # Etiquetas de columnas (Trabajadores)
+    # Encabezados de trabajadores pegados a la tabla
     for i in range(N):
-        ax.text(i + 0.5, filas + 0.2,
-                f"Trab {i+1}",
-                ha="center", va="bottom", fontsize=8, rotation=45)
+        ax.text(i + 0.5, total_altura + 0.25, f"Trab {i+1}",
+                ha="center", va="bottom", fontsize=10)
 
     # Guardar el gráfico en PDF
     nombre_pdf = f"calendario_{nombre_instancia}.pdf"
@@ -76,51 +113,8 @@ def dibujar_calendario(N, H, T, x, nombre_instancia, carpeta_salida):
     print(f"✅ Calendario generado en: {ruta_pdf}")
 
 
+
 if __name__ == "__main__":
-    
-    CARPETA_SALIDA_PDF = "calendarios"
-    PREFIJO_INSTANCIA = "instancia_pequena_"
-    INDICES_A_PROCESAR = [1, 2, 3, 4, 5]
-    SUFIJO_INSTANCIA = "_1.json"
-
-    # Crear la carpeta de salida si no existe
-    os.makedirs(CARPETA_SALIDA_PDF, exist_ok=True)
-    print(f"📁 Asegurando que la carpeta de salida '{CARPETA_SALIDA_PDF}' existe.")
-
-    # 1. Crear la lista exacta de archivos a procesar
-    archivos_json = []
-    for i in INDICES_A_PROCESAR:
-        nombre_archivo = f"{PREFIJO_INSTANCIA}{i}{SUFIJO_INSTANCIA}"
-        ruta_json = os.path.join("outputs", nombre_archivo)
-        
-        if os.path.exists(ruta_json):
-            archivos_json.append(ruta_json)
-        else:
-            print(f"⚠️ Archivo no encontrado: {ruta_json}")
-
-    
-    if not archivos_json:
-        print(f"⚠️ No se encontraron archivos de las instancias pequeñas {INDICES_A_PROCESAR} con sufijo '{SUFIJO_INSTANCIA}'.")
-        exit() # Termina el script si no hay archivos para procesar
-    
-    print(f"⚙️ Procesando {len(archivos_json)} instancias específicas...")
-
-    # 2. Iterar sobre cada archivo encontrado en la lista filtrada
-    for ruta_json in archivos_json:
-        try:
-            # El nombre de la instancia es la parte del nombre de archivo sin la carpeta ni la extensión
-            nombre_archivo_completo = os.path.basename(ruta_json)
-            nombre_instancia = nombre_archivo_completo.replace(".json", "")
-            
-            print(f"\n--- Procesando {nombre_instancia} ({ruta_json}) ---")
-            
-            # Cargar los datos
-            N, H, T, x = cargar_solucion_json(ruta_json)
-            
-            # Dibujar y guardar el calendario
-            dibujar_calendario(N, H, T, x, nombre_instancia, CARPETA_SALIDA_PDF)
-            
-        except Exception as e:
-            print(f"❌ ERROR al procesar {ruta_json}: {e}")
-
-    print("\n✨ Proceso de generación de calendarios finalizado.")
+    ruta_json = "outputs/instancia_mediana_1_1.json"
+    N, H, T, x = cargar_solucion_json(ruta_json)
+    dibujar_calendario(N, H, T, x)
